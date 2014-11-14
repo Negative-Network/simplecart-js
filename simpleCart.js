@@ -112,6 +112,8 @@
 					discount:0,
 					discountTotal:0,
 					discountType:"percentage", //percentage or amount
+					
+					custom:null,
 
 					taxRate				: 0,
 
@@ -600,7 +602,15 @@
 						discountTotal = simpleCart.discount();
 					}
 					return discountTotal || 0;
-				}
+				},
+				custom: function (custom) {
+					if (isString(custom)) {
+						settings.custom = custom;
+						simpleCart.update();
+					} else {
+						return settings.custom;
+					}
+				},
 
 			});
 
@@ -1039,6 +1049,10 @@
 					if (simpleCart.discountTotal != 0)
 					{
 						data["discount_amount_cart"] = simpleCart.discountTotal();
+					}
+					if (simpleCart.custom != null)
+					{
+						data["custom"] = simpleCart.custom();
 					}
 
 					// return the data for the checkout form
