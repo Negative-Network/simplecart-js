@@ -375,7 +375,6 @@
 				},
 				discount: function (val) {
 					simpleCart.discount = val;
-					console.log('yo'+val);
 					simpleCart.update();
 					return simpleCart.discount();
 				},
