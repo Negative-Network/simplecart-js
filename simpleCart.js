@@ -54,7 +54,7 @@
 				localStorage			= window.localStorage,
 				console					= window.console || { msgs: [], log: function (msg) { console.msgs.push(msg); } },
 
-				// used in views 
+				// used in views
 				_VALUE_		= 'value',
 				_TEXT_		= 'text',
 				_HTML_		= 'html',
@@ -108,9 +108,13 @@
 					shippingQuantityRate	: 0,
 					shippingTotalRate		: 0,
 					shippingCustom		: null,
+					
+					discount:0,
+					discountTotal:0,
+					discountType:"percentage", //percentage or amount
 
 					taxRate				: 0,
-					
+
 					taxShipping			: false,
 
 					data				: {}
@@ -172,20 +176,20 @@
 				add: function (values, opt_quiet) {
 					var info		= values || {},
 						newItem		= new simpleCart.Item(info),
-						addItem 	= true,
+						addItem		= true,
 						// optionally supress event triggers
-						quiet 		= opt_quiet === true ? opt_quiet : false,
+						quiet		= opt_quiet === true ? opt_quiet : false,
 						oldItem;
 
 					// trigger before add event
 					if (!quiet) {
-					  	addItem = simpleCart.trigger('beforeAdd', [newItem]);
-					
+						addItem = simpleCart.trigger('beforeAdd', [newItem]);
+
 						if (addItem === false) {
 							return false;
 						}
 					}
-					
+
 					// if the new item already exists, increment the value
 					oldItem = simpleCart.has(newItem);
 					if (oldItem) {
@@ -342,7 +346,7 @@
 						// send a param of true to make sure it doesn't
 						// update after every removal
 						// keep the item if the function returns false,
-						// because we know it has been prevented 
+						// because we know it has been prevented
 						// from being removed
 						if (item.remove(true) === false) {
 							newItems[item.id()] = item
@@ -369,9 +373,25 @@
 					});
 					return total;
 				},
+				discount: function (val) {
+					simpleCart.discount = val;
+					console.log('yo'+val);
+					simpleCart.update();
+					return simpleCart.discount();
+				},
+				discountTotal: function () {
+					var total = 0;
+					total = simpleCart.discount();
+					return total;
+				},
+				discountType: function (val) {
+					simpleCart.discountType = val;
+					simpleCart.update();
+					return simpleCart.discountType();
+				},
 
 				grandTotal: function () {
-					return simpleCart.total() + simpleCart.tax() + simpleCart.shipping();
+					return simpleCart.total() - simpleCart.discountTotal() + simpleCart.tax() + simpleCart.shipping();
 				},
 
 
@@ -455,8 +475,8 @@
 					if (!items) {
 						return;
 					}
-					
-					// we wrap this in a try statement so we can catch 
+
+					// we wrap this in a try statement so we can catch
 					// any json parsing errors. no more stick and we
 					// have a playing card pluckin the spokes now...
 					// soundin like a harley.
@@ -516,7 +536,7 @@
 				tax: function () {
 					var totalToTax = settings.taxShipping ? simpleCart.total() + simpleCart.shipping() : simpleCart.total(),
 						cost = simpleCart.taxRate() * totalToTax;
-					
+
 					simpleCart.each(function (item) {
 						if (item.get('tax')) {
 							cost += item.get('tax');
@@ -526,7 +546,7 @@
 					});
 					return parseFloat(cost);
 				},
-				
+
 				taxRate: function () {
 					return settings.taxRate || 0;
 				},
@@ -553,6 +573,34 @@
 						cost += parseFloat(item.get('shipping') || 0);
 					});
 					return parseFloat(cost);
+				},
+				discount: function (discount) {
+					if (!isUndefined(discount)) {
+						settings.discount = discount;
+						simpleCart.update();
+					} else {
+						return settings.discount;
+					}
+				},
+				discountType: function (discounttype) {
+					if (isString(discounttype)) {
+						settings.discounttype = discounttype;
+						simpleCart.update();
+					} else {
+						return settings.discounttype;
+					}
+				},
+				discountTotal: function () {
+					var discountTotal = settings.discountTotal;
+					
+					if (simpleCart.discountType() == 'percentage'){
+						var discount = 1 - (simpleCart.discount()/100);
+						discountTotal = simpleCart.total() - simpleCart.total()*discount;
+					}
+					else{
+						discountTotal = simpleCart.discount();
+					}
+					return discountTotal || 0;
 				}
 
 			});
@@ -827,7 +875,7 @@
 						return false;
 					}
 					delete sc_items[this.id()];
-					if (!skipUpdate) { 
+					if (!skipUpdate) {
 						simpleCart.update();
 					}
 					return null;
@@ -887,7 +935,7 @@
 						settings.checkout.fn.call(simpleCart,settings.checkout);
 					} else if (isFunction(simpleCart.checkout[settings.checkout.type])) {
 						var checkoutData = simpleCart.checkout[settings.checkout.type].call(simpleCart,settings.checkout);
-						
+
 						// if the checkout method returns data, try to send the form
 						if( checkoutData.data && checkoutData.action && checkoutData.method ){
 							// if no one has any objections, send the checkout form
@@ -895,7 +943,7 @@
 								simpleCart.generateAndSendForm( checkoutData );
 							}
 						}
-						
+
 					} else {
 						simpleCart.error("No Valid Checkout Method Specified");
 					}
@@ -959,7 +1007,7 @@
 							item_options = item.options(),
 							optionCount = 0,
 							send;
-	
+
 						// basic item data
 						data["item_name_" + counter] = item.get("name");
 						data["quantity_" + counter] = item.quantity();
@@ -971,7 +1019,7 @@
 						simpleCart.each(item_options, function (val,k,attr) {
 							// paypal limits us to 10 options
 							if (k < 10) {
-		
+
 								// check to see if we need to exclude this from checkout
 								send = true;
 								simpleCart.each(settings.excludeFromCheckout, function (field_name) {
@@ -982,14 +1030,17 @@
 										data["on" + k + "_" + counter] = attr;
 										data["os" + k + "_" + counter] = val;
 								}
-	
+
 							}
 						});
 
 						// options count
 						data["option_index_"+ x] = Math.min(10, optionCount);
 					});
-
+					if (simpleCart.discountTotal != 0)
+					{
+						data["discount_amount_cart"] = simpleCart.discountTotal();
+					}
 
 					// return the data for the checkout form
 					return {
@@ -1212,10 +1263,10 @@
 					if (!this._events) {
 						this._events = {};
 					}
-					
+
 					// split by spaces to allow for multiple event bindings at once
 					var eventNameList = name.split(/ +/);
-					
+
 					// iterate through and bind each event
 					simpleCart.each( eventNameList , function( eventName ){
 						if (this._events[eventName] === true) {
@@ -1227,10 +1278,10 @@
 						}
 					});
 
-					
+
 					return this;
 				},
-				
+
 				// trigger event
 				trigger: function (name, options) {
 					var returnval = true,
@@ -1272,7 +1323,7 @@
 				, beforeCheckout		: null
 				, beforeRemove			: null
 			};
-			
+
 			// extend with base events
 			simpleCart(baseEvents);
 
@@ -1303,14 +1354,14 @@
 						numParts = num.toFixed(_opts.accuracy).split("."),
 						dec = numParts[1],
 						ints = numParts[0];
-			
+
 					ints = simpleCart.chunk(ints.reverse(), 3).join(_opts.delimiter.reverse()).reverse();
 
 					return	(!_opts.after ? _opts.symbol : "") +
 							ints +
 							(dec ? _opts.decimal + dec : "") +
 							(_opts.after ? _opts.symbol : "");
-	
+
 				},
 
 
@@ -1355,7 +1406,7 @@
 				// bind outlets to function
 				bindOutlets: function (outlets) {
 					simpleCart.each(outlets, function (callback, x, selector) {
-						
+
 						simpleCart.bind('update', function () {
 							simpleCart.setOutlet("." + namespace + "_" + selector, callback);
 						});
@@ -1379,11 +1430,11 @@
 					});
 				},
 
-				// attach events to inputs	
+				// attach events to inputs
 				setInput: function (selector, event, func) {
 					simpleCart.$(selector).live(event, func);
 				}
-			});		
+			});
 
 
 			// class for wrapping DOM selector shit
@@ -1409,7 +1460,7 @@
 						if (isUndefined(val)) {
 							return this.el[0] && this.el[0].get(attr);
 						}
-						
+
 						this.el.set(attr, val);
 						return this;
 					},
@@ -1610,7 +1661,7 @@
 						if (isUndefined(val)) {
 							return this.el[action]();
 						}
-						
+
 						this.el[action](val);
 						return this;
 					},
@@ -1707,6 +1758,15 @@
 					, shipping: function () {
 						return simpleCart.toCurrency(simpleCart.shipping());
 					}
+					, discount: function () {
+						return simpleCart.discount().toFixed();
+					}
+					, discountType: function () {
+						return simpleCart.discountType;
+					}
+					, discountTotal: function () {
+						return simpleCart.discountTotal().toFixed();
+					}
 					, grandTotal: function () {
 						return simpleCart.toCurrency(simpleCart.grandTotal());
 					}
@@ -1796,7 +1856,7 @@
 													type = $item.attr("type");
 													if (!type || ((type.toLowerCase() === "checkbox" || type.toLowerCase() === "radio") && $item.attr("checked")) || type.toLowerCase() === "text" || type.toLowerCase() === "number") {
 														val = $item.val();
-													}				
+													}
 													break;
 												case "img":
 													val = $item.attr('src');
@@ -1862,7 +1922,7 @@
 				// and execute any waiting functions
 				simpleCart.init();
 			}
-			
+
 			// bind ready event used from jquery
 			function sc_BindReady () {
 
