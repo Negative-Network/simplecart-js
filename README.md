@@ -9,13 +9,14 @@ Copyright (c) 2012 Brett Wejrowski
 Dual licensed under the MIT or GPL licenses.
 
 ##This fork add
- - Discount management:
-At the moment the discount management applies only on the cart total.
-Possibility to set an amount and a type of discount (percentage or amount)
-Automatic calculation of the discount and of the total.
-The paypal checkout is also already managed with the discount. Support for SendForm will be probably soon added.
-I didn't do it for the other checkout (Amazon/Google) as I don't need it and don't have the time to check the api. Feel free to fork/pull request for this.
+1. Discount management:
+ - At the moment the discount management applies only on the cart total.
+ - Possibility to set an amount and a type of discount (percentage or amount)
+ - Automatic calculation of the discount and of the total.
+ - The paypal checkout is also already managed with the discount. Support for SendForm will be probably soon added.
+ - I didn't do it for the other checkout (Amazon/Google) as I don't need it and don't have the time to check the api. Feel free to fork/pull request for this.
 
+```
 	<script src="simpleCart.js"></script>
 	<script>
 		simpleCart.discount(); // 0
@@ -41,6 +42,7 @@ I didn't do it for the other checkout (Amazon/Google) as I don't need it and don
 		simpleCart.discountType('amount');
 		simpleCart.grandTotal(); // 190
 	</script>
+```		
 			
 ##This is version 3
 
