@@ -1771,15 +1771,6 @@
 					, shipping: function () {
 						return simpleCart.toCurrency(simpleCart.shipping());
 					}
-					, discount: function () {
-						return simpleCart.discount().toFixed();
-					}
-					, discountType: function () {
-						return simpleCart.discountType;
-					}
-					, discountTotal: function () {
-						return simpleCart.discountTotal().toFixed();
-					}
 					, grandTotal: function () {
 						return simpleCart.toCurrency(simpleCart.grandTotal());
 					}
