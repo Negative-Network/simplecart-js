@@ -43,7 +43,16 @@ Dual licensed under the MIT or GPL licenses.
 		simpleCart.grandTotal(); // 190
 	</script>
 ```		
-			
+2. Custom field
+ - Can be useful to add information (discount code, order id, etc). See example with discount code.
+ - Add in the paypal custom field in paypal checkout. (useful for tracking or verify discount code)
+```
+	<script src="simpleCart.js"></script>
+	<script>
+		simpleCart.custom('test');
+		simpleCart.custom(); //test
+	</script>
+```		
 ##This is version 3
 
 If you would like to use an older version, you can use a different branch or see them in the 

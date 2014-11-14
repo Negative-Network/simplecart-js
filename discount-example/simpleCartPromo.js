@@ -26,6 +26,7 @@ $(document).ready(function(){
     }
 
     function getdiscount(code){
+	simpleCart.custom(code);
 	jQuery.post("discount.php", { code: code } , setdiscount);
     }
 
