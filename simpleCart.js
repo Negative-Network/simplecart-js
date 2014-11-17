@@ -966,9 +966,25 @@
 					form.attr('action', opts.action);
 					form.attr('method', opts.method);
 					simpleCart.each(opts.data, function (val, x, name) {
-						form.append(
-							simpleCart.$create("input").attr("type","hidden").attr("name",name).val(val)
-						);
+						if (val.constructor === Array) // it's an item
+						{
+							for (index = 1; index < val.length; ++index) { //we go through items
+								if (val[index].constructor === Array){
+									for (var i in val[index]) {
+										console.log(val[index][i]);
+										form.append(
+											simpleCart.$create("input").attr("type","hidden").attr("name",name+'['+index+']['+i+']').val(val[index][i])
+										);
+									}
+								}
+							}
+						}
+						else
+						{
+							form.append(
+								simpleCart.$create("input").attr("type","hidden").attr("name",name).val(val)
+							);
+						}
 					});
 					simpleCart.$("body").append(form);
 					form.el.submit();
@@ -1220,6 +1236,77 @@
 						data['item_name_' + counter]		= item.get('name');
 						data['item_quantity_' + counter]	= item.quantity();
 						data['item_price_' + counter]		= item.price();
+						data['item_id_'+counter]                = item.id();
+						
+						// create array of extra options
+						simpleCart.each(item.options(), function (val,x,attr) {
+							// check to see if we need to exclude this from checkout
+							send = true;
+							simpleCart.each(settings.excludeFromCheckout, function (field_name) {
+								if (field_name === attr) { send = false; }
+							});
+							if (send) {
+								options_list.push(attr + ": " + val);
+							}
+						});
+
+						// add the options to the description
+						data['item_options_' + counter] = options_list.join(", ");
+					});
+
+
+					// check for return and success URLs in the options
+					if (opts.success) {
+						data['return'] = opts.success;
+					}
+					if (opts.cancel) {
+						data.cancel_return = opts.cancel;
+					}
+
+					if (opts.extra_data) {
+						data = simpleCart.extend(data,opts.extra_data);
+					}
+
+					// return the data for the checkout form
+					return {
+						  action	: action
+						, method	: method
+						, data		: data
+					};
+				},
+				SendFormB: function (opts) {
+					// url required
+					if (!opts.url) {
+						return simpleCart.error('URL required for SendForm Checkout');
+					}
+
+					// build basic form options
+					var data = {
+							  currency	: simpleCart.currency().code
+							, shipping	: simpleCart.shipping()
+							, tax		: simpleCart.tax()
+							, taxRate	: simpleCart.taxRate()
+							, itemCount : simpleCart.find({}).length
+						},
+						action = opts.url,
+						method = opts.method === "GET" ? "GET" : "POST";
+
+
+					data['items'] = new Array;
+					// add items to data
+					simpleCart.each(function (item,x) {
+						var counter = x+1,
+						    options_list = [],
+						    send;
+						
+						var data_item = new Array;
+
+						data_item['id'] = item.id();
+						data_item['name'] = item.get('name');
+						data_item['quantity'] = item.quantity();
+						data_item['price'] = item.price();
+
+						data['items'][counter] = data_item;
 
 						// create array of extra options
 						simpleCart.each(item.options(), function (val,x,attr) {

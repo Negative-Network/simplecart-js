@@ -52,7 +52,42 @@ Dual licensed under the MIT or GPL licenses.
 		simpleCart.custom('test');
 		simpleCart.custom(); //test
 	</script>
-```		
+```
+3. SendForm
+Add item id
+4. SendFormB
+Reorganized the post.
+The items are now under an index items in the POST array.
+```
+Array
+(
+    [currency] => EUR
+    [shipping] => 0
+    [tax] => 0
+    [taxRate] => 0
+    [itemCount] => 2
+    [items] => Array
+        (
+            [1] => Array
+                (
+                    [id] => my id // if you've got an id
+                    [name] => My super name
+                    [quantity] => 1
+                    [price] => 15
+                )
+
+            [2] => Array
+                (
+                    [id] => an other id
+                    [name] => An other name
+                    [quantity] => 1
+                    [price] => 25
+                )
+		)
+		[item_options_1] => // my options
+		[item_options_2] => // other options
+)
+```
 ##This is version 3
 
 If you would like to use an older version, you can use a different branch or see them in the 
