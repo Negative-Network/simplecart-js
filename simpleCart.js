@@ -966,10 +966,10 @@
 					form.attr('action', opts.action);
 					form.attr('method', opts.method);
 					simpleCart.each(opts.data, function (val, x, name) {
-						if (val.constructor === Array) // it's an item
+						if (typeof val === Array) // it's an item
 						{
 							for (index = 1; index < val.length; ++index) { //we go through items
-								if (val[index].constructor === Array){
+								if (typeof val[index] === Array){
 									for (var i in val[index]) {
 										console.log(val[index][i]);
 										form.append(
