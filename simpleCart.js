@@ -10,6 +10,28 @@
 	Dual licensed under the MIT or GPL licenses.
 ~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~*/
 /*jslint browser: true, unparam: true, white: true, nomen: true, regexp: true, maxerr: 50, indent: 4 */
+	
+/**
+* Check whether an object is Array or not
+* @type Boolean
+* @param {object} subject is the variable that is
+* tested for Array identity check
+*/
+var isArray = (function () {
+    // Use compiler's own isArray when available
+    if (Array.isArray) {
+        return Array.isArray;
+    }
+ 
+    // Retain references to variables for performance
+    // optimization
+    var objectToStringFn = Object.prototype.toString,
+        arrayToStringResult = objectToStringFn.call([]);
+ 
+    return function (subject) {
+        return objectToStringFn.call(subject) === arrayToStringResult;
+    };
+}());
 
 (function (window, document) {
 	/*global HTMLElement */
@@ -966,10 +988,10 @@
 					form.attr('action', opts.action);
 					form.attr('method', opts.method);
 					simpleCart.each(opts.data, function (val, x, name) {
-						if (typeof val === Array) // it's an item
+						if (Array.isArray(val)) // it's an item
 						{
 							for (index = 1; index < val.length; ++index) { //we go through items
-								if (typeof val[index] === Array){
+								if (Array.isArray(val[index])){
 									for (var i in val[index]) {
 										console.log(val[index][i]);
 										form.append(
