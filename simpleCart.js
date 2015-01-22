@@ -1288,6 +1288,16 @@ var isArray = (function () {
 					if (opts.extra_data) {
 						data = simpleCart.extend(data,opts.extra_data);
 					}
+					
+					if (simpleCart.discountTotal != 0)
+					{
+						data["discount_amount_cart"] = simpleCart.discountTotal();
+					}
+					if (simpleCart.custom != null)
+					{
+						data["custom"] = simpleCart.custom();
+					}
+
 
 					// return the data for the checkout form
 					return {
@@ -1358,6 +1368,16 @@ var isArray = (function () {
 					if (opts.extra_data) {
 						data = simpleCart.extend(data,opts.extra_data);
 					}
+
+					if (simpleCart.discountTotal != 0)
+					{
+						data["discount_amount_cart"] = simpleCart.discountTotal();
+					}
+					if (simpleCart.custom != null)
+					{
+						data["custom"] = simpleCart.custom();
+					}
+
 
 					// return the data for the checkout form
 					return {
