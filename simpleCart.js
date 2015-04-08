@@ -52,7 +52,6 @@ var isArray = (function () {
 		},
 
 
-
 		generateSimpleCart = function (space) {
 
 			// stealing this from selectivizr
@@ -67,6 +66,7 @@ var isArray = (function () {
 				item_id					= 0,
 				item_id_namespace		= "SCI-",
 				sc_items				= {},
+				sc_discounts			= [],
 				namespace				= space || "simpleCart",
 				selectorFunctions		= {},
 				eventFunctions			= {},
@@ -131,6 +131,7 @@ var isArray = (function () {
 					shippingTotalRate		: 0,
 					shippingCustom		: null,
 					
+					discounts:[],
 					discount:0,
 					discountTotal:0,
 					discountType:"percentage", //percentage or amount
@@ -397,6 +398,37 @@ var isArray = (function () {
 					});
 					return total;
 				},
+				addDiscount: function (discount) {
+					var discounts = simpleCart.discounts();
+					discounts[discount['id']] = discount;
+					simpleCart.discounts(discounts);
+
+				    var totalDiscountPercent = 0;
+				    var totalDiscountValue = 0;
+				    var totalDiscount = 0;
+				    var total = simpleCart.total();
+		    		var cur_symbol = simpleCart.currency().symbol;
+
+				    discounts.forEach(function(discount) {
+				    	var type = cur_symbol;
+
+				    	if (discount.type == 'cart_percent')
+				    	{ 
+				    		totalDiscountPercent += parseFloat(discount.amount);
+						}
+						else
+						{
+				    		totalDiscountValue += parseFloat(discount.amount);
+						}
+					});
+
+					totalDiscount = (simpleCart.total()*totalDiscountPercent/100)+totalDiscountValue;
+					simpleCart.discount(totalDiscount);
+					total = simpleCart.total(simpleCart.total() - totalDiscount);
+
+					simpleCart.update();
+					return discounts;
+				},
 				discount: function (val) {
 					simpleCart.discount = val;
 					simpleCart.update();
@@ -468,7 +500,6 @@ var isArray = (function () {
 						ids.push(item.id());
 					});
 					return ids;
-
 				},
 
 
@@ -484,6 +515,15 @@ var isArray = (function () {
 					});
 
 					localStorage.setItem(namespace + "_items", JSON.stringify(items));
+
+					var discounts = [];
+
+					// save all the discounts
+					localStorage.setItem(namespace + "_discounts", null);
+					var currentDiscounts = simpleCart.discounts();
+					// console.log(currentDiscounts);
+					if (typeof currentDiscounts !== 'undefined' && currentDiscounts.length > 0) localStorage.setItem(namespace + "_discounts", currentDiscounts);
+
 
 					simpleCart.trigger('afterSave');
 				},
@@ -510,6 +550,13 @@ var isArray = (function () {
 					} catch (e){
 						simpleCart.error( "Error Loading data: " + e );
 					}
+
+
+					// empty without the update
+					sc_discounts = [];
+					// console.log('loading');
+					var currentDiscounts = localStorage.getItem(namespace + "_discounts");
+					// console.log(currentDiscounts);
 
 
 					simpleCart.trigger('load');
@@ -596,6 +643,14 @@ var isArray = (function () {
 						cost += parseFloat(item.get('shipping') || 0);
 					});
 					return parseFloat(cost);
+				},
+				discounts: function (discounts) {
+					if (!isUndefined(discounts)) {
+						settings.discounts = discounts;
+						simpleCart.update();
+					} else {
+						return settings.discounts;
+					}
 				},
 				discount: function (discount) {
 					if (!isUndefined(discount)) {
@@ -1373,6 +1428,10 @@ var isArray = (function () {
 					{
 						data["discount_amount_cart"] = simpleCart.discountTotal();
 					}
+
+					// add discounts to data
+					data['discounts'] = JSON.stringify(simpleCart.discounts());
+
 					if (simpleCart.custom != null)
 					{
 						data["custom"] = simpleCart.custom();
