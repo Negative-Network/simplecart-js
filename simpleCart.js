@@ -516,14 +516,14 @@ var isArray = (function () {
 
 					localStorage.setItem(namespace + "_items", JSON.stringify(items));
 
-					var discounts = [];
 
-					// save all the discounts
-					localStorage.setItem(namespace + "_discounts", null);
-					var currentDiscounts = simpleCart.discounts();
-					// console.log(currentDiscounts);
-					if (typeof currentDiscounts !== 'undefined' && currentDiscounts.length > 0) localStorage.setItem(namespace + "_discounts", currentDiscounts);
-
+					// var currentDiscounts = simpleCart.discounts();
+					// if (typeof currentDiscounts !== 'undefined' && currentDiscounts.length > 0)
+					// {
+					// 	console.log('in simpleCart save:');
+					// 	localStorage.setItem(namespace + "_discounts", JSON.stringify(currentDiscounts));
+					// 	console.log(currentDiscounts);
+					// }
 
 					simpleCart.trigger('afterSave');
 				},
@@ -552,11 +552,9 @@ var isArray = (function () {
 					}
 
 
-					// empty without the update
-					sc_discounts = [];
-					// console.log('loading');
-					var currentDiscounts = localStorage.getItem(namespace + "_discounts");
-					// console.log(currentDiscounts);
+					// console.log('in simpleCart load:');
+					// simpleCart.discounts( JSON.parse(localStorage.getItem(namespace + "_discounts")) );
+					// console.log(simpleCart.discounts());
 
 
 					simpleCart.trigger('load');
